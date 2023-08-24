@@ -3,9 +3,10 @@ from graphene import Schema
 from starlette_graphene3 import GraphQLApp, make_graphiql_handler
 
 from app.gql.mutations import Mutation
+from app.gql.queries import Query
 
 
-schema = Schema(mutation=Mutation)
+schema = Schema(query=Query, mutation=Mutation)
 
 app = FastAPI()
 graphene_app = GraphQLApp(
