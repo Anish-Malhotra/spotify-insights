@@ -15,9 +15,9 @@ graphene_app = GraphQLApp(
     schema=schema,
 )
 
-@app.on_event("startup")
-def on_start():
-    init_db()
+#@app.on_event("startup")
+#def on_start():
+#    init_db()
     
 
 app.mount("/graphql", graphene_app)
