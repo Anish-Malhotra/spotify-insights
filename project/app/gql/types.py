@@ -6,3 +6,10 @@ class SpotifyProfileObject(ObjectType):
     username = String()
     client_id = String()
     client_secret = String()
+    
+    
+class SpotifyProfileSavedSongsObject(ObjectType):
+    profile_id = Int()
+    song_id = String()
+    name = String()
+    artist = String()
