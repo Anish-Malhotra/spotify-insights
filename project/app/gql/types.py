@@ -1,15 +1,21 @@
-from graphene import Int, ObjectType, String
+from graphene import Int, ObjectType, String, DateTime
 
 
-class SpotifyProfileObject(ObjectType):
+class UserObject(ObjectType):
     id = Int()
     username = String()
-    client_id = String()
-    client_secret = String()
+    email = String()
+    password = String()
+
+class SpotifyProfileObject(ObjectType):
+    user_id = Int()
+    spotify_username = String()
+    authorization_token = String()
+    token_expiry = DateTime()
     
     
-class SpotifyProfileSavedSongsObject(ObjectType):
-    profile_id = Int()
+class SpotifyProfileSavedSongObject(ObjectType):
+    spotify_username = String()
     song_id = String()
     name = String()
     artist = String()
