@@ -8,8 +8,10 @@ from app.gql.queries import Query
 from app.spotify.util import form_login_url
 
 
+# GQL Schema
 schema = Schema(query=Query, mutation=Mutation)
 
+# Webserver init
 app = FastAPI()
 graphene_app = GraphQLApp(
     on_get=make_graphiql_handler(),
@@ -17,6 +19,7 @@ graphene_app = GraphQLApp(
 )
 
 
+# A workaround to redirect to the Spotify OAuth2 page with the requestor's ID set in a cookie for DB insert 
 @app.get("/spotify_redirect")
 def spotify_redirect(request: Request):
     login_url = form_login_url()
@@ -27,6 +30,7 @@ def spotify_redirect(request: Request):
     return response
 
 
+# Callback from the Spotify OAuth page in order to update the user's DB record with their authorization token
 @app.get("/spotify_callback")
 def spotify_callback(request: Request):
     code = request.query_params.get("code")
@@ -55,4 +59,5 @@ def spotify_callback(request: Request):
     return result.data
 
 
+# GraphiQL playground
 app.mount("/graphql", graphene_app)

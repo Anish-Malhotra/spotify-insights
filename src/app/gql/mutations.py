@@ -5,9 +5,10 @@ import requests
 from app.gql.types import UserObject, SpotifyProfileObject
 from app.db.db import Session
 from app.db.models import User, SpotifyProfile
-from app.spotify.util import form_redirect_url_with_username, get_spotify_access_token, refresh_access_token
+from app.spotify.util import form_redirect_url_with_username, get_spotify_auth_token, refresh_auth_token
 
 
+# This mutation creates a new 'user' entry
 class CreateUser(Mutation):
     class Arguments:
         username = String(required=True)
@@ -32,6 +33,7 @@ class CreateUser(Mutation):
             return CreateUser(user=user)
 
 
+# This mutation creates a new 'spotify_profile' and serves an OAuth2 login URL to obtain an authorization token
 class CreateSpotifyProfile(Mutation):
     class Arguments:
         user_id = Int(required=True)
@@ -59,7 +61,8 @@ class CreateSpotifyProfile(Mutation):
             
             return CreateSpotifyProfile(spotify_profile=spotify_profile, spotify_login_url=login_url)
         
-        
+
+# This mutation updates a newly created 'spotify_profile' with an authorization token, a refresh token and expiry time for use with the Spotify API        
 class UpdateProfileWithAuthToken(Mutation):
     class Arguments:
         code = String(required=True)
@@ -74,7 +77,7 @@ class UpdateProfileWithAuthToken(Mutation):
             if not existing_profile:
                 raise GraphQLError("Trying to authenticate user without a linked profile")
             
-            token = get_spotify_access_token(code)
+            token = get_spotify_auth_token(code)
                         
             existing_profile.authorization_token = token['token']
             existing_profile.token_expiry = token['expiry']
@@ -83,7 +86,8 @@ class UpdateProfileWithAuthToken(Mutation):
             session.refresh(existing_profile)
             return UpdateProfileWithAuthToken(spotify_profile=existing_profile)
         
-        
+
+# This mutation updates an existing 'spotify_profile' with a new authorization token and expiry time using the refresh token
 class UpdateProfileWithRefreshedToken(Mutation):
     class Arguments:
         user = String(required=True)
@@ -100,7 +104,7 @@ class UpdateProfileWithRefreshedToken(Mutation):
             if not existing_profile.refresh_token:
                 raise GraphQLError("Cannot refresh authorization without a refresh token")
             
-            token = refresh_access_token(existing_profile.refresh_token)
+            token = refresh_auth_token(existing_profile.refresh_token)
             
             existing_profile.authorization_token = token['token']
             existing_profile.token_expiry = token['expiry']

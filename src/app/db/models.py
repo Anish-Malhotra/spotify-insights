@@ -5,6 +5,7 @@ from sqlalchemy.ext.declarative import declarative_base
 Base = declarative_base()
 
 
+# 'users' table which stores the user-level information for the spotify-insights app
 class User(Base):
     __tablename__ = "users"
     
@@ -14,6 +15,7 @@ class User(Base):
     password = Column(String(255), nullable=False)
 
 
+# 'spotify_profiles' table which links a user to an authorized Spotify profile
 class SpotifyProfile(Base):
     __tablename__ = "spotify_profiles"
     
@@ -23,7 +25,8 @@ class SpotifyProfile(Base):
     token_expiry = Column(DateTime)
     refresh_token = Column(String(255))
     
-    
+
+# 'spotify_profile_saved_songs' table which stores basic data about a profile's liked tracks    
 class SpotifyProfileSavedSong(Base):
     __tablename__ = "spotify_profile_saved_songs"
     

@@ -4,14 +4,17 @@ volumes:
 services:
 
   web:
-    build: ./project
+    build: ./src
     command: uvicorn app.main:app --reload --workers 1 --host 0.0.0.0 --port 8000
     volumes:
-      - ./project:/usr/src/app
+      - ./src:/usr/src/app
     ports:
       - 8004:8000
     environment:
       - DATABASE_CONN_STRING=postgresql+psycopg://root:secret@db:5432/spotify-insights-db
+      - SCOPE=user-library-read
+      - CLIENT_ID=07400bfe46634f1f8d7752496b5d8c7e
+      - CLIENT_SECRET=0a41f3b4e51a4fc7a9e6c1f30a4c7f89
     depends_on:
       - db
 

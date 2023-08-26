@@ -1,19 +1,24 @@
+import os
 import requests
 from urllib.parse import urlencode
 from datetime import datetime, timedelta
 
 
-REDIRECT_URI = "http://localhost:8004/spotify_callback"
-SCOPE = "user-library-read"
-CLIENT_ID = "07400bfe46634f1f8d7752496b5d8c7e"
-CLIENT_SECRET = "0a41f3b4e51a4fc7a9e6c1f30a4c7f89"
+# Spotify Application setup
+SCOPE = os.environ.get("SCOPE")
+CLIENT_ID = os.environ.get("CLIENT_ID")
+CLIENT_SECRET = os.environ.get("CLIENT_SECRET")
 
+# Spotify API URLs
 AUTH_URL = 'https://accounts.spotify.com/authorize'
 TOKEN_URL = 'https://accounts.spotify.com/api/token'
 
+# Local endpoints used with Spotify OAuth2
+REDIRECT_URI = "http://localhost:8004/spotify_callback"
 LOCAL_AUTH = 'http://localhost:8004/spotify_redirect'
 
 
+# Used to obtain an access code, which is then used to obtain the authorization token for the user
 def form_login_url():
     payload = {
         'client_id': CLIENT_ID,
@@ -25,6 +30,7 @@ def form_login_url():
     return f"{AUTH_URL}/?{urlencode(payload)}"
     
 
+# Used to package the requestor's spotify username as a cookie with the login url
 def form_redirect_url_with_username(spotify_username: str):
     payload = {
         'spotify_username': spotify_username,
@@ -32,7 +38,8 @@ def form_redirect_url_with_username(spotify_username: str):
     return f"{LOCAL_AUTH}/?{urlencode(payload)}"
 
 
-def get_spotify_access_token(code: str):
+# Obtains the authorization token for the current user for use with the Spotify API
+def get_spotify_auth_token(code: str):
     payload = {
         'grant_type': 'authorization_code',
         'code': code,
@@ -51,7 +58,8 @@ def get_spotify_access_token(code: str):
     return {"token": res_data.get("access_token"), "refresh": res_data.get("refresh_token"), "expiry": expiry}
 
 
-def refresh_access_token(refresh_token: str):
+# Obtains a refreshed authorization token for the user
+def refresh_auth_token(refresh_token: str):
     payload = {
         'grant_type': 'refresh_token',
         'refresh_token': refresh_token,
