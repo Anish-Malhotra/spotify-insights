@@ -1,7 +1,6 @@
 from fastapi import HTTPException
 from graphene import Field, Int, ObjectType, Mutation, String
 from graphql import GraphQLError
-import requests
 
 from app.gql.types import UserObject, SpotifyProfileObject
 from app.db.db import Session
