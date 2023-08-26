@@ -1,3 +1,4 @@
+from fastapi import HTTPException
 from graphene import Field, Int, ObjectType, Mutation, String
 from graphql import GraphQLError
 import requests
@@ -77,7 +78,11 @@ class UpdateProfileWithAuthToken(Mutation):
             if not existing_profile:
                 raise GraphQLError("Trying to authenticate user without a linked profile")
             
-            token = get_spotify_auth_token(code)
+            token = None
+            try:
+                token = get_spotify_auth_token(existing_profile.refresh_token)
+            except HTTPException as e:
+                raise GraphQLError(original_error=e)
                         
             existing_profile.authorization_token = token['token']
             existing_profile.token_expiry = token['expiry']
@@ -104,7 +109,11 @@ class UpdateProfileWithRefreshedToken(Mutation):
             if not existing_profile.refresh_token:
                 raise GraphQLError("Cannot refresh authorization without a refresh token")
             
-            token = refresh_auth_token(existing_profile.refresh_token)
+            token = None
+            try:
+                token = refresh_auth_token(existing_profile.refresh_token)
+            except HTTPException as e:
+                raise GraphQLError(original_error=e)
             
             existing_profile.authorization_token = token['token']
             existing_profile.token_expiry = token['expiry']

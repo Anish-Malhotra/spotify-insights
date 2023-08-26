@@ -3,6 +3,8 @@ import requests
 from urllib.parse import urlencode
 from datetime import datetime, timedelta
 
+from fastapi import HTTPException
+
 
 # Spotify Application setup
 SCOPE = os.environ.get("SCOPE")
@@ -51,8 +53,8 @@ def get_spotify_auth_token(code: str):
     res_data = res.json()
     
     if res_data.get('error') or res.status_code != 200:
-        raise Exception(
-            'Failed to receive token: %s', res_data.get('error', 'No error information received.'),
+        raise HTTPException(
+            status_code=res.status_code, detail=f"Failed to receive token: {res_data.get('error', 'No error information received.')}",
         )
         
     return {"token": res_data.get("access_token"), "refresh": res_data.get("refresh_token"), "expiry": expiry}
@@ -71,6 +73,11 @@ def refresh_auth_token(refresh_token: str):
         TOKEN_URL, auth=(CLIENT_ID, CLIENT_SECRET), data=payload, headers=headers
     )
     res_data = res.json()
+    
+    if res_data.get('error') or res.status_code != 200:
+        raise HTTPException(
+            status_code=res.status_code, detail=f"Failed to receive token: {res_data.get('error', 'No error information received.')}",
+        )
     
     return {"token": res_data.get("access_token"), "expiry": expiry}
     
