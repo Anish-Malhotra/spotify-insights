@@ -1,9 +1,14 @@
 import os
 import requests
+from functools import wraps
 from urllib.parse import urlencode
 from datetime import datetime, timedelta
 
+from graphql import GraphQLError
 from fastapi import HTTPException
+
+from app.db.db import Session
+from app.db.models import SpotifyProfile
 
 
 # Spotify Application setup
@@ -80,4 +85,23 @@ def refresh_auth_token(refresh_token: str):
         )
     
     return {"token": res_data.get("access_token"), "expiry": expiry}
-    
+
+
+# Decorator to ensure authorization with Spotify is current
+def spotify_auth_active(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        user_id = kwargs.get("user_id")
+        session = Session()
+        
+        profile = session.query(SpotifyProfile).filter(SpotifyProfile.user_id == user_id).first()
+        
+        if not profile:
+            raise GraphQLError(f"Cannot find profile for user_id {user_id} to check authorization")
+        if not profile.authorization_token:
+            raise GraphQLError(f"User {user_id} has not authorized their Spotify profile for use with this application")
+        if datetime.utcnow() <= profile.token_expiry:
+            raise GraphQLError(f"User {user_id} must refresh their authorization with Spotify")
+        
+        return func(*args, **kwargs)
+    return wrapper
