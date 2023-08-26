@@ -13,6 +13,7 @@ class Query(ObjectType):
     spotify_profiles = List(SpotifyProfileObject)
     spotify_profile = Field(SpotifyProfileObject, user_id=Int(), spotify_username=String())
     spotify_profile_saved_songs = List(SpotifyProfileSavedSongObject, limit=Int(default_value=50), offset=Int(default_value=0))
+    spotify_profile_saved_songs_for_user = List(SpotifyProfileSavedSongObject, username=String(required=True), limit=Int(default_value=50), offset=Int(default_value=0))
     
     @staticmethod
     def resolve_users(root, info):
@@ -44,3 +45,8 @@ class Query(ObjectType):
     def resolve_spotify_profile_saved_songs(root, info, limit, offset):
         with Session() as session:
             return session.query(SpotifyProfileSavedSong).limit(limit).offset(offset).all()
+        
+    @staticmethod
+    def resolve_spotify_profile_saved_songs_for_user(root, info, username, limit, offset):
+        with Session() as session:
+            return session.query(SpotifyProfileSavedSong).limit(limit).offset(offset).filter(SpotifyProfileSavedSong.spotify_username == username).all()
