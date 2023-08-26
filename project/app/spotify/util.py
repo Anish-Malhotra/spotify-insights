@@ -48,5 +48,21 @@ def get_spotify_access_token(code: str):
             'Failed to receive token: %s', res_data.get('error', 'No error information received.'),
         )
         
+    return {"token": res_data.get("access_token"), "refresh": res_data.get("refresh_token"), "expiry": expiry}
+
+
+def refresh_access_token(refresh_token: str):
+    payload = {
+        'grant_type': 'refresh_token',
+        'refresh_token': refresh_token,
+    }
+    headers = {'Content-Type': 'application/x-www-form-urlencoded'}
+    
+    expiry = datetime.utcnow() + timedelta(seconds=3600)
+    res = requests.post(
+        TOKEN_URL, auth=(CLIENT_ID, CLIENT_SECRET), data=payload, headers=headers
+    )
+    res_data = res.json()
+    
     return {"token": res_data.get("access_token"), "expiry": expiry}
     

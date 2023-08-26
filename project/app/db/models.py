@@ -21,6 +21,7 @@ class SpotifyProfile(Base):
     spotify_username = Column(String(100), primary_key=True, unique=True)
     authorization_token = (Column(String(255)))
     token_expiry = Column(DateTime)
+    refresh_token = Column(String(255))
     
     
 class SpotifyProfileSavedSong(Base):

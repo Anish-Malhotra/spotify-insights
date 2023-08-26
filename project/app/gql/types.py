@@ -12,6 +12,7 @@ class SpotifyProfileObject(ObjectType):
     spotify_username = String()
     authorization_token = String()
     token_expiry = DateTime()
+    refresh_token = String()
     
     
 class SpotifyProfileSavedSongObject(ObjectType):
