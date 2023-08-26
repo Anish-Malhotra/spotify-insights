@@ -15,6 +15,8 @@ services:
       - SCOPE=user-library-read
       - CLIENT_ID=07400bfe46634f1f8d7752496b5d8c7e
       - CLIENT_SECRET=0a41f3b4e51a4fc7a9e6c1f30a4c7f89
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
     depends_on:
       - db
 
@@ -28,3 +30,19 @@ services:
       - POSTGRES_DB=spotify-insights-db
     volumes:
       - spotify-insights-vol:/var/lib/postgresql/data
+
+  worker:
+    build: ./src
+    command: celery -A app.worker.celery worker --loglevel=info
+    volumes:
+      - ./src:/usr/src/app
+    environment:
+      - DATABASE_CONN_STRING=postgresql+psycopg://root:secret@db:5432/spotify-insights-db
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    depends_on:
+      - web
+      - redis
+
+  redis:
+    image: redis:7

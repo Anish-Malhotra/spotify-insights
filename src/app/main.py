@@ -5,7 +5,7 @@ from starlette_graphene3 import GraphQLApp, make_graphiql_handler
 
 from app.gql.mutations import Mutation
 from app.gql.queries import Query
-from app.spotify.util import form_login_url
+from app.spotify.auth import form_login_url
 
 
 # GQL Schema

@@ -1,11 +1,13 @@
 from fastapi import HTTPException
-from graphene import Field, Int, ObjectType, Mutation, String
+from graphene import Boolean, Field, Int, ObjectType, Mutation, String
 from graphql import GraphQLError
 
 from app.gql.types import UserObject, SpotifyProfileObject
 from app.db.db import Session
 from app.db.models import User, SpotifyProfile
-from app.spotify.util import form_redirect_url_with_username, get_spotify_auth_token, refresh_auth_token
+
+from app.spotify.api import import_liked_songs
+from app.spotify.auth import form_redirect_url_with_username, get_spotify_auth_token, refresh_auth_token, spotify_auth_active
 
 
 # This mutation creates a new 'user' entry
@@ -119,6 +121,21 @@ class UpdateProfileWithRefreshedToken(Mutation):
             session.commit()
             session.refresh(existing_profile)
             return UpdateProfileWithRefreshedToken(spotify_profile=existing_profile)
+        
+        
+# This mutation imports a user's liked songs from their Spotify profile
+class AddSpotifyProfileSavedSongs(Mutation):
+    class Arguments:
+        user_id = Int(required=True)
+        
+    task_id = String()
+    
+    @spotify_auth_active
+    def mutate(root, info, user_id):
+        with Session() as session:
+            profile = session.query(SpotifyProfile).filter(SpotifyProfile.user_id == user_id).first()
+            task = import_liked_songs.delay(auth_token=profile.authorization_token, username=profile.spotify_username)
+            return AddSpotifyProfileSavedSongs(task_id=task.id)
 
 
 class Mutation(ObjectType):
@@ -126,3 +143,4 @@ class Mutation(ObjectType):
     create_spotify_profile = CreateSpotifyProfile.Field()
     update_profile_with_auth_token = UpdateProfileWithAuthToken.Field()
     update_profile_with_refreshed_token = UpdateProfileWithRefreshedToken.Field()
+    add_spotify_profile_saved_songs = AddSpotifyProfileSavedSongs.Field()

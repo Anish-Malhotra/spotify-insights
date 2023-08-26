@@ -49,4 +49,4 @@ class Query(ObjectType):
     @staticmethod
     def resolve_spotify_profile_saved_songs_for_user(root, info, username, limit, offset):
         with Session() as session:
-            return session.query(SpotifyProfileSavedSong).limit(limit).offset(offset).filter(SpotifyProfileSavedSong.spotify_username == username).all()
+            return session.query(SpotifyProfileSavedSong).filter(SpotifyProfileSavedSong.spotify_username == username).limit(limit).offset(offset).all()
